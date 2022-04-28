@@ -22,20 +22,22 @@ typedef struct
     float grade;
 } student_t;
 
-/* Read the informations of a student and return
+/* Read the informations of a student from the input and store
  * these informations in a student_t struct */
 int readRegFromInput(student_t**);
 
+/* Read the informations of a student from a binary file and 
+ * return these informations in a student_t struct*/
 student_t* readRegFromBin(FILE*, int);
 
 /* Write the register in a binary file */
 void writeRegister(FILE* , student_t*);
 
 
-/* Show the last ten register in the file */
+/* Show the last ten register from the binary file */
 void showLastTen(FILE*);
 
-/* show just one register */
+/* Show just one register from the binary file*/
 void showOneReg(FILE*, int);
 
 /* Get the size of the file in terms of registers*/
