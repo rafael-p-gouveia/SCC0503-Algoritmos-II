@@ -13,8 +13,6 @@
 
 #define FILE_PATH "output.bin"
 
-//Programa por Maxsuel Fernandes de Almeida, de nUSP  e Rafael Pereira de Gouveia, de nUSP 11800820
-
 int main(void)
 {
     student_t **student;
