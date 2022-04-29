@@ -1,3 +1,12 @@
+/******************************************************************************
+ * Author: Maxsuel Fernandes de Almeida                                       *
+ * NUSP: 11801028                                                             *
+ *                                                                            *
+ * Author: Rafael Pereira de Gouveia                                          *
+ * NUSP: 11800820                                                             *
+ ******************************************************************************/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "input_2_bin.h"
