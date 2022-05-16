@@ -10,6 +10,7 @@
 #include "manage_file.h"
 #include <stdio.h>
 
+#define EXIT -1
 
 int main(){
     int nOP;
@@ -19,6 +20,6 @@ int main(){
     do{
         nOP = get_op();
         select_op(nOP);
-    }while(nOP != -1);
+    }while(nOP != EXIT);
     return 0;
 }
