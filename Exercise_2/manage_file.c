@@ -86,7 +86,10 @@ char* get_insertion_field(int *err, int *sizeField){
     int charCounter;
 
     charCounter = 0;
-    word = (char*)malloc((DEFAULT_WORD_SIZE) * sizeof(char)); 
+    word = (char*)malloc((DEFAULT_WORD_SIZE) * sizeof(char));
+    if (word == NULL){
+        exit(EXIT_FAILURE);
+    }
 
     while(TRUE) {
         buffer = getc(stdin);
@@ -95,6 +98,9 @@ char* get_insertion_field(int *err, int *sizeField){
             word[charCounter] = ENDS;
                                                  // Free unneeded memory
             word = (char*)realloc(word, (charCounter + 1) * sizeof(char));
+            if(word == NULL){
+                exit(EXIT_FAILURE);
+            }
 
             *sizeField = charCounter + 1;        // Set pointer with the size of the string
             return word;
@@ -108,6 +114,9 @@ char* get_insertion_field(int *err, int *sizeField){
         if(charCounter%DEFAULT_WORD_SIZE == 0) {
             word = (char*)realloc(word,(charCounter + DEFAULT_WORD_SIZE) \
                     * sizeof(char));             // Allocate more memory chunks, if needed
+            if(word == NULL){
+                exit(EXIT_FAILURE);
+            }
         }
         if(charCounter == MAX_WORD_SIZE - 1) {   // Prevents user from overflowing memory.
             *err = 1;
@@ -158,6 +167,10 @@ void insert_student(student input) {
                   + input.sizeString[2] + sizeof(float);
 
     db = fopen(DB_PATH, "rb+");
+    index = fopen(INDEX_PATH, "rb+");
+    if(db == NULL || index == NULL){
+        exit(EXIT_FAILURE);
+    }
 
     fread(&offsetDB, sizeof(int), 1, db);        // Get end of file byte offset.
     fseek(db, offsetDB, SEEK_SET);               // Set the cursor at the end of the file.
@@ -176,7 +189,7 @@ void insert_student(student input) {
     fwrite(&aux, sizeof(int), 1, db);            // Uptade the header with the 
                                                  // new end of file byte offset.
 
-    index = fopen(INDEX_PATH, "rb+");
+    
     fread(&emptySlotRRN,sizeof(int), 1, index);  //Check the header to see if there are empty slots.
     if(emptySlotRRN != -1) { 
                                                  // If so go to the data column of the first one
@@ -212,6 +225,9 @@ void delete_entry(int key) {
 
     index = fopen(INDEX_PATH, "rb+");
     db = fopen(DB_PATH, "rb+");
+    if(db == NULL || index == NULL){
+        exit(EXIT_FAILURE);
+    }
                                                  
     rrnExclusion = find_entry_index(key, &dbOffset);
     if(rrnExclusion == -1) {
@@ -243,6 +259,10 @@ int find_entry_index(int key, int *respectiveOffset) {
     int freadReturn, bufferKey, bufferOffset, entryRRN;
 
     index = fopen(INDEX_PATH, "rb+");
+    if(index == NULL){
+        exit(EXIT_FAILURE);
+    }
+
     entryRRN = 0;
 
     fseek(index, 2 * sizeof(int), SEEK_SET); // Skip the header.
@@ -270,6 +290,9 @@ student* search_student(int key) {
     student *retval;
 
     db = fopen(DB_PATH, "rb+");
+    if(db == NULL){
+        exit(EXIT_FAILURE);
+    }
 
     if(find_entry_index(key, &respectiveOffset) != -1) { 
                                                  // If the entry exist, respectiveOffset gets 
@@ -317,17 +340,6 @@ void print_fields(student *arrStudents, int nFields){
                 arrStudents[i].course, arrStudents[i].grade);
         printf("-------------------------------\n");
     }
-}
-
-FILE* open_file(char path[], char mode[]){
-    FILE* retval;
-
-    retval = fopen(path, mode);
-    if(!retval) {
-        printf("Failed to open file...\n");
-        exit(EXIT_FAILURE);
-    }
-    return retval;
 }
 
 
