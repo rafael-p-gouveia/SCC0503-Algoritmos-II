@@ -29,20 +29,55 @@ typedef struct _student {
     float grade;
 }student;
 
-void insert_student(student newEntry){
-    FILE* db;
-    long int newEntryRRN, newVacantSlotRRN;
+void update_entry(student input){
+    long int RRN;
+    RRN = search_bTree(input.nUSP);
 
-    if(search_bTree(newEntry.nUSP) != ENTRY_NOT_FOUND){
-        printf("O Registro ja existe!\n");
+    if(RRN == ENTRY_NOT_FOUND){
+        printf("Registro nao encontrado!\n");
+        return;
     }
+    write_to_file(RNN,input);
+}
+
+student* search_student(int selected_key){
+    long int studentRRN;
+    studentRRN = search_bTree(selected_key);
+    FILE* db;
+    student* retval;
+    char charBuffer[STRING_LENGHT];
+
+    if(studentRRN == ENTRY_NOT_FOUND){
+        printf("Registro nao encontrado!\n");
+        return NULL;
+    }
+
+    retval = (student*)malloc(sizeof(student));
+    if(retval == NULL){
+        exit(EXIT_FAILURE);
+    }
+
+    db = fopen(DB_PATH,"rb");
+    fseek(db,studentRRN*SIZE_ENTRY,SEEK_SET);
+    fread(&(retval->nUSP),sizeof(int),1,db);
+    fread(retval->name,(STRING_LENGHT + 1)*sizeof(char),1,db);
+    fread(retval->surname,(STRING_LENGHT + 1)*sizeof(char),1,db);
+    fread(retval->course,(STRING_LENGHT + 1)*sizeof(char),1,db);
+    fread(&(retval->grade),sizeof(float),1,db);
+
+    fclose(db);
+    return retval;
+
+}
+
+void write_to_file(long int newEntryRRN, student newEntry){
+    FILE* db;
 
     db = fopen(DB_PATH,"rb+");
     if (db == NULL){
         exit(EXIT_FAILURE);
     }
 
-    fread(&newEntryRRN, sizeof(long int), 1, db);
     fseek(db, newEntryRRN * SIZE_ENTRY, SEEK_SET);
 
     fwrite(&(newEntry.nUSP), sizeof(int), 1, db);
@@ -50,12 +85,29 @@ void insert_student(student newEntry){
     fwrite(newEntry.surname, (STRING_LENGHT + 1)*sizeof(char), 1, db);
     fwrite(newEntry.course, (STRING_LENGHT + 1)*sizeof(char), 1, db);
     fwrite(&(newEntry.grade), sizeof(float), 1, db);
+    fclose(db);
+}
 
-    fseek(db, sizeof(long int), SEEK_SET);
+void insert_student(student newEntry){
+    FILE* db;
+    long int newEntryRRN, newVacantSlotRRN;
+
+    /*if(search_bTree(newEntry.nUSP) != ENTRY_NOT_FOUND){
+        printf("O Registro ja existe!\n");
+    }*/
+
+    db = fopen(DB_PATH,"rb+");
+    if (db == NULL){
+        exit(EXIT_FAILURE);
+    }
+
+    fread(&newEntryRRN, sizeof(long int), 1, db);
+    write_to_file(newEntryRRN,newEntry);
+    fseek(db, 0, SEEK_SET);
     newVacantSlotRRN = newEntryRRN + 1;
     fwrite(&newVacantSlotRRN, sizeof(long int), 1, db);
 
-    add_b_tree(newEntry.nUSP,newEntryRRN);
+    //add_b_tree(newEntry.nUSP,newEntryRRN);
 
     fclose(db);
 }
@@ -89,13 +141,13 @@ void select_op(int nOP) {
     switch(nOP){
         case INSERT:
             *input = get_full_insertion_input();
-            //print_fields(input,1);
+            print_fields(input,1);
             //insert_student(*input);
             break;
 
         case SEARCH:
             scanf("%d", &selectedKey);
-            //input = search_student(selectedKey);
+            input = search_student(selectedKey);
             if(input != NULL){
                 print_fields(input, 1);
             }
@@ -103,7 +155,7 @@ void select_op(int nOP) {
 
         case UPDATE:
             *input = get_full_insertion_input();
-            //update_entry(*input);
+            update_entry(*input);
             break;
 
         case EXIT:
