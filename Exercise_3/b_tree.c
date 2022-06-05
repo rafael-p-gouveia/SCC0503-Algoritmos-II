@@ -11,14 +11,17 @@ typedef struct _tree_page{
     int key[KEY_NUMBER];
     long int RRN[KEY_NUMBER], child[KEY_NUMBER + 1];
     short int isLeaf;
+    int numberOfKeys;
 }tree_page;
 
-int find_key_position(int key, int *arrayKeys, int *isInNode){
+
+
+int find_key_position(int key, int *arrayKeys, int numberOfKeys, int *isInNode){
     int i;
 
     i = 0;
     *isInNode = 0;
-    while(i < KEY_NUMBER && arrayKeys[i] != EMPTY_SLOT){
+    while(i < numberOfKeys){
         if(arrayKeys[i] == key){
             *isInNode = 1;
             return i;
@@ -43,8 +46,9 @@ long int recursion_search(int key, long int nodeRRN, FILE* bTree){ //talvez mude
     fread(currentNode.RRN,sizeof(long int),KEY_NUMBER,bTree);
     fread(currentNode.child,sizeof(long int),KEY_NUMBER+1,bTree);
     fread(&(currentNode.isLeaf),sizeof(short int),1,bTree);
+    fread(&(currentNode.numberOfKeys),sizeof(int),1,bTree);
 
-    keyPosition = find_key_position(key,currentNode.key,&isInNode);
+    keyPosition = find_key_position(key,currentNode.key,currentNode.numberOfKeys,&isInNode);
     if(isInNode){
         return currentNode.RRN[keyPosition];
     }
