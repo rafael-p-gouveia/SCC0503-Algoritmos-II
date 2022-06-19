@@ -70,5 +70,18 @@ int main(void)
         case EXIT: break;
         }
     }
+
+    // Free record if it was allocated
+    if(record)
+    {
+        free(record);
+    }
+
+    // Free student if it was allocated
+    if(student)
+    {
+        free(student);
+    }
+
     return 0;
 }

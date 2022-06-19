@@ -42,6 +42,7 @@ void create_b_tree(char *bTreePath)
     // Write an empty page in the b-tree file.
     write_page(newPage, 1, 2 * MINIMUN_DEGREE - 1, bTree);
 
+    destroy_page(newPage);
     fclose(bTree);
 }
 
@@ -79,7 +80,7 @@ short b_tree_insert(char *filePath, record_t *record)
         fseek(filePointer, 0, SEEK_SET);
         fwrite(&rootRRN, LONG_SIZE, 1, filePointer);
 
-        // Write the new root page.
+        // Write the new root page in the disc.
         write_page(newRootPage, rootRRN, 2 * MINIMUN_DEGREE - 1, filePointer);
 
         split_child(newRootPage, rootRRN, 0, filePointer);
@@ -223,7 +224,7 @@ void split_child(page_t *parentPage, long parentRRN, int childIndex\
     // Get the RRN where the new child page will be written.
     auxRRN = get_empty_page(filePointer);
 
-    // Write the parent page in disc.
+    // Write the parent page in the disc.
     parentPage->children[childIndex + 1] = auxRRN;
     write_page(parentPage, parentRRN, 2 * MINIMUN_DEGREE - 1, filePointer);
 
@@ -232,9 +233,10 @@ void split_child(page_t *parentPage, long parentRRN, int childIndex\
                , 2 * MINIMUN_DEGREE - 1, filePointer);
 
     // Write the other chilndren page in the disc.
-    //auxRRN = get_end_of_file_RRN(filePointer);
     write_page(childrenPages[1], auxRRN, 2 * MINIMUN_DEGREE - 1, filePointer);
 
+    destroy_page(childrenPages[0]);
+    destroy_page(childrenPages[1]);
 }
 
 /** Funciton to search for a key in the b-tree.
@@ -294,6 +296,12 @@ record_t *recursion_search(page_t *currentPage, int key, FILE *filePointer)
             && key == currentPage->records[index].key)
     {
         record = (record_t *)malloc(sizeof(record_t));
+        if (!record)
+        {
+            printf("Error in allocate memory\n");
+            printf("The program will be closed...\n");
+            exit(EXIT_FAILURE);
+        }
         record->key = currentPage->records[index].key;
         record->RRN = currentPage->records[index].RRN;
         return record;
@@ -328,9 +336,18 @@ long get_root_RRN(FILE *bTree)
     return rootRRN;
 }
 
+/** Function to get the RRN of a empty page.
+ *  Given the b-tree file, looks for the first empty page
+ *  in the b-tree. It makes the b-tree file smaller, because
+ *  we add a new page at any empty space instead of append at
+ *  the and of the file.
+ *
+ *  @param bTree pointer to the b-tree file.
+ **/
 long get_empty_page(FILE *bTree)
 {
     long RRN;
+    int numOfKeys;
     page_t *page;
 
     RRN = -1;
@@ -338,12 +355,16 @@ long get_empty_page(FILE *bTree)
     {
         RRN++;
         fseek(bTree, RRN * PAGE_SIZE, SEEK_SET);
-        if(!feof(bTree))
+        if (!feof(bTree))
+        {
             page = read_page(RRN, 2 * MINIMUN_DEGREE - 1, bTree);
+            numOfKeys = page->numOfKeys;
+            destroy_page(page);
+        }
         else
             break;
     }
-    while (page->numOfKeys >= 0);
+    while (numOfKeys >= 0);
 
     return RRN;
 }

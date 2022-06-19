@@ -21,7 +21,6 @@ void create_database(char *filePath)
 {
     FILE *filePointer;
     filePointer = open_file(filePath, "wb");
-
     fclose(filePointer);
 }
 /** Function to get the operation to be executed.
