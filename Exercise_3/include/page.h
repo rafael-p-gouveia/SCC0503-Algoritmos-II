@@ -6,13 +6,6 @@
  */
 #include "../include/utils.h"
 
-/* Struct for the records */
-typedef struct record
-{
-    int key;
-    long RRN;
-} record_t;
-
 /* Defines the page (or node) of the b-tree */
 typedef struct page
 {

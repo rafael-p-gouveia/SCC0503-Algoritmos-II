@@ -1,6 +1,0 @@
-#ifndef DATABASE_MANAGEMENT_H
-#define DATABASE_MANAGEMENT_H
-
-
-
-#endif

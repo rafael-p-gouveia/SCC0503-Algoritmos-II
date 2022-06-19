@@ -41,6 +41,7 @@ page_t *create_page(int maxNumOfKeys)
         page->records[i].key = INITIALIZER;
     }
 
+    page->numOfKeys = INITIALIZER;
     return page;
 }
 

@@ -9,12 +9,7 @@
 #include "../include/utils.h"
 
 /* Auxiliar defines */
-#define EMPTY_SLOT -1
-#define EMPTY_TREE_RRN -1
 #define LONG_SIZE sizeof(long)
-#define MINIMUN_DEGREE 10
-
-
 
 /** Function to create a b-tree.
  *  Create a b-tree containing just an empty page.
@@ -57,7 +52,7 @@ void create_b_tree(char *bTreePath)
  *  @param key the key to be inserted.
  *  @return short 1 if success and 0 otherwise.
  **/
-short b_tree_insert(char *filePath, int key)
+short b_tree_insert(char *filePath, record_t *record)
 {
     FILE *filePointer;
     page_t *rootPage;
@@ -84,14 +79,17 @@ short b_tree_insert(char *filePath, int key)
         fseek(filePointer, 0, SEEK_SET);
         fwrite(&rootRRN, LONG_SIZE, 1, filePointer);
 
+        // Write the new root page.
+        write_page(newRootPage, rootRRN, 2 * MINIMUN_DEGREE - 1, filePointer);
+
         split_child(newRootPage, rootRRN, 0, filePointer);
-        insert_nonfull(newRootPage, key, rootRRN, filePointer);
+        insert_nonfull(newRootPage, record, rootRRN, filePointer);
 
         destroy_page(newRootPage);
     }
     else
     {
-        insert_nonfull(rootPage, key, rootRRN, filePointer);
+        insert_nonfull(rootPage, record, rootRRN, filePointer);
     }
 
     destroy_page(rootPage);
@@ -108,7 +106,7 @@ short b_tree_insert(char *filePath, int key)
  *  @param currPageRRN the RRN of the page.
  *  @param filePointe pointer to the b-tree file.
  **/
-void insert_nonfull(page_t* currentPage, int key, long currPageRRN\
+void insert_nonfull(page_t* currentPage, record_t *record, long currPageRRN\
                     , FILE *filePointer)
 {
     page_t *nextPage;
@@ -118,13 +116,15 @@ void insert_nonfull(page_t* currentPage, int key, long currPageRRN\
 
     if (currentPage->isLeaf)
     {
-        while (index >= 0 && key < currentPage->records[index].key)
+        while (index >= 0 && record->key < currentPage->records[index].key)
         {
             currentPage->records[index + 1].key = currentPage->records[index].key;
+            currentPage->records[index + 1].RRN = currentPage->records[index].RRN;
             index--;
         }
 
-        currentPage->records[index + 1].key = key;
+        currentPage->records[index + 1].key = record->key;
+        currentPage->records[index + 1].RRN = record->RRN;
         currentPage->numOfKeys++;
 
         write_page(currentPage, currPageRRN, 2 * MINIMUN_DEGREE - 1\
@@ -132,7 +132,7 @@ void insert_nonfull(page_t* currentPage, int key, long currPageRRN\
     }
     else
     {
-        while (index >= 0 && key < currentPage->records[index].key)
+        while (index >= 0 && record->key < currentPage->records[index].key)
             index--;
         index++;
         nextPage = read_page(currentPage->children[index], 2 * MINIMUN_DEGREE - 1, filePointer);
@@ -141,7 +141,7 @@ void insert_nonfull(page_t* currentPage, int key, long currPageRRN\
         {
             split_child(currentPage, currPageRRN, index, filePointer);
 
-            if (key > currentPage->records[index].key)
+            if (record->key > currentPage->records[index].key)
             {
                 index++;
                 destroy_page(nextPage);
@@ -151,7 +151,7 @@ void insert_nonfull(page_t* currentPage, int key, long currPageRRN\
         }
 
 
-        insert_nonfull(nextPage, key, currentPage->children[index]\
+        insert_nonfull(nextPage, record, currentPage->children[index]\
                        , filePointer);
 
         destroy_page(nextPage);
@@ -189,6 +189,8 @@ void split_child(page_t *parentPage, long parentRRN, int childIndex\
         auxIndex = i + MINIMUN_DEGREE;
         childrenPages[1]->records[i].key\
             = childrenPages[0]->records[auxIndex].key;
+        childrenPages[1]->records[i].RRN\
+            = childrenPages[0]->records[auxIndex].RRN;
     }
 
     if (!childrenPages[0]->isLeaf)
@@ -209,14 +211,17 @@ void split_child(page_t *parentPage, long parentRRN, int childIndex\
     for (int i = parentPage->numOfKeys - 1; i >= childIndex; --i)
     {
         parentPage->records[i + 1].key = parentPage->records[i].key;
+        parentPage->records[i + 1].RRN = parentPage->records[i].RRN;
     }
 
     parentPage->records[childIndex].key\
         = childrenPages[0]->records[MINIMUN_DEGREE - 1].key;
+    parentPage->records[childIndex].RRN\
+        = childrenPages[0]->records[MINIMUN_DEGREE - 1].RRN;
     parentPage->numOfKeys++;
 
     // Get the RRN where the new child page will be written.
-    auxRRN = get_end_of_file_RRN(filePointer) + 1;
+    auxRRN = get_empty_page(filePointer);
 
     // Write the parent page in disc.
     parentPage->children[childIndex + 1] = auxRRN;
@@ -321,4 +326,24 @@ long get_root_RRN(FILE *bTree)
     fread(&rootRRN, LONG_SIZE, 1, bTree);
 
     return rootRRN;
+}
+
+long get_empty_page(FILE *bTree)
+{
+    long RRN;
+    page_t *page;
+
+    RRN = -1;
+    do
+    {
+        RRN++;
+        fseek(bTree, RRN * PAGE_SIZE, SEEK_SET);
+        if(!feof(bTree))
+            page = read_page(RRN, 2 * MINIMUN_DEGREE - 1, bTree);
+        else
+            break;
+    }
+    while (page->numOfKeys >= 0);
+
+    return RRN;
 }

@@ -8,11 +8,11 @@
 #include "../include/page.h"
 
 void create_b_tree(char *);
-short b_tree_insert(char *, int);
-void insert_nonfull(page_t *, int, long, FILE *);
+short b_tree_insert(char *, record_t *);
+void insert_nonfull(page_t *, record_t *, long, FILE *);
 void split_child(page_t *, long, int, FILE *);
 record_t *b_tree_search(int);
 record_t *recursion_search(page_t *, int, FILE *);
 long get_root_RRN(FILE *);
-
+long get_empty_page(FILE *);
 #endif

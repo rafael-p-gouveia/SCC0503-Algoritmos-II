@@ -4,10 +4,10 @@ CFLAGS=-I$(IDIR)
 
 ODIR=obj
 
-_DEPS=page.h utils.h b_tree.h
+_DEPS=page.h utils.h b_tree.h database_management.h
 DEPS=$(patsubst %, $(IDIR)/%, $(_DEPS))
 
-_OBJ = main.o page.o utils.o b_tree.o
+_OBJ = main.o page.o utils.o b_tree.o database_management.o
 OBJ=$(patsubst %, $(ODIR)/%, $(_OBJ))
 
 all: b_tree_exe
@@ -20,7 +20,6 @@ b_tree_exe: $(OBJ)
 
 run:
 	./b_tree_exe
-
 
 
 

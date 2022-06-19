@@ -4,7 +4,6 @@
  */
 #include <stdlib.h>
 #include "../include/utils.h"
-#define PAGE_SIZE_U 4096
 
 /** Function to open a file.
  *  Given a path, open the respective file or create one
@@ -40,7 +39,7 @@ long get_end_of_file_RRN(FILE *filePointer)
     long endRRN;
 
     fseek(filePointer, 0, SEEK_END);
-    endRRN = (long) ftell(filePointer) / PAGE_SIZE_U;
+    endRRN = (long) ftell(filePointer) / PAGE_SIZE;
 
     return endRRN;
 }
