@@ -1,0 +1,8 @@
+com\rpg\exercicio_4_profundidade\Edge.class
+com\rpg\exercicio_4_profundidade\Vertex.class
+com\rpg\exercicio_4_profundidade\DepthFirstTraversal.class
+com\rpg\exercicio_4_profundidade\Graph.class
+com\rpg\exercicio_4_profundidade\InputParser.class
+com\rpg\exercicio_4_profundidade\NewMain.class
+com\rpg\exercicio_4_profundidade\DigraphMatrix.class
+com\rpg\exercicio_4_profundidade\TraversalStrategy.class
